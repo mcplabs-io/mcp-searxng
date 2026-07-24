@@ -19,8 +19,8 @@
       "environmentVariables": [
         {
           "name": "SEARXNG_URL",
-          "description": "URL of your SearXNG instance",
-          "isRequired": true,
+          "description": "URL of your SearXNG instance (optional — defaults to a set of public instances)",
+          "isRequired": false,
           "isSecret": false,
           "format": "string"
         }

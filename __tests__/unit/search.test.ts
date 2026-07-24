@@ -10,6 +10,7 @@ import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { performWebSearch, formatCachedSearchResult, getSearchTimeoutMs } from '../../src/search.js';
+import { validateEnvironment } from '../../src/error-handler.js';
 import { searchCache } from '../../src/search-cache.js';
 import { clearInstanceInfoCacheForTests } from '../../src/instance-info.js';
 import {
@@ -63,17 +64,11 @@ function makeConfigWithEngines() {
 async function runTests() {
   console.log('🧪 Testing: search.ts\n');
 
-  await testFunction('Error handling for missing SEARXNG_URL', async () => {
+  await testFunction('validateEnvironment passes with default URLs when SEARXNG_URL is not set', async () => {
     envManager.delete('SEARXNG_URL');
     
-    const mockServer = createMockServer();
-    
-    try {
-      await performWebSearch(mockServer as any, 'test query');
-      assert.fail('Should have thrown configuration error');
-    } catch (error: any) {
-      assert.ok(error.message.includes('SEARXNG_URL not configured') || error.message.includes('Configuration'));
-    }
+    const result = validateEnvironment();
+    assert.equal(result, null);
     
     envManager.restore();
   }, results);

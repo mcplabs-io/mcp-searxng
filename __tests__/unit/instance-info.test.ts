@@ -242,21 +242,16 @@ async function runTests() {
     envManager.restore();
   }, results);
 
-  await testFunction('returns unavailable payload when SEARXNG_URL is unset', async () => {
+  await testFunction('fetches from default URLs when SEARXNG_URL is unset', async () => {
     clearInstanceInfoCacheForTests();
     envManager.delete('SEARXNG_URL');
     const mockServer = createMockServer();
-    let fetchCalled = false;
-    fetchMocker.mock(async () => {
-      fetchCalled = true;
-      return createMockFetch({ json: makeConfig() })('https://unused.example.com');
-    });
+
+    fetchMocker.mock(createMockFetch({ json: makeConfig() }));
 
     const result = JSON.parse(await fetchInstanceInfo(mockServer as any));
 
-    assert.equal(result.available, false);
-    assert.equal(fetchCalled, false);
-    assert.ok(result.message.includes('SEARXNG_URL'));
+    assert.equal(result.available, true);
 
     fetchMocker.restore();
     envManager.restore();

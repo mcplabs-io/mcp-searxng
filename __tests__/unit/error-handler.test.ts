@@ -149,12 +149,11 @@ async function runTests() {
     envManager.restore();
   }, results);
 
-  await testFunction('validateEnvironment - missing SEARXNG_URL', () => {
+  await testFunction('validateEnvironment - uses defaults when SEARXNG_URL is not set', () => {
     envManager.delete('SEARXNG_URL');
     
     const result = validateEnvironment();
-    assert.ok(typeof result === 'string');
-    assert.ok(result!.includes('SEARXNG_URL not set'));
+    assert.equal(result, null);
     
     envManager.restore();
   }, results);
@@ -220,12 +219,11 @@ async function runTests() {
     envManager.restore();
   }, results);
 
-  await testFunction('validateEnvironment - empty-only multi-URL list is treated as not set', () => {
+  await testFunction('validateEnvironment - empty-only multi-URL list returns no error', () => {
     for (const emptyList of ['', ';', ' ; ']) {
       envManager.set('SEARXNG_URL', emptyList);
       const result = validateEnvironment();
-      assert.ok(typeof result === 'string');
-      assert.ok(result!.includes('SEARXNG_URL not set'));
+      assert.equal(result, null);
     }
 
     envManager.restore();

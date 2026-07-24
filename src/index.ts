@@ -1,5 +1,4 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -333,63 +332,69 @@ export function createMcpServer(): McpServer {
   return mcpServer;
 }
 
+function getListenPort(): number | "stdio" {
+  const raw = process.env.MCP_HTTP_PORT;
+  if (!raw) {
+    return 3000;
+  }
+  if (raw.trim().toLowerCase() === "stdio") {
+    return "stdio";
+  }
+  const parsed = parseInt(raw, 10);
+  if (isNaN(parsed) || parsed < 0 || parsed > 65535) {
+    console.error(`Invalid MCP_HTTP_PORT: ${raw}. Must be a port (0-65535) or "stdio". Falling back to 3000.`);
+    return 3000;
+  }
+  if (parsed === 0) {
+    return "stdio";
+  }
+  return parsed;
+}
+
 // Main function
 export async function main() {
-  // Check for HTTP transport mode
-  const httpPort = process.env.MCP_HTTP_PORT;
-  if (httpPort) {
-    const port = parseInt(httpPort, 10);
-    if (isNaN(port) || port < 1 || port > 65535) {
-      console.error(`Invalid HTTP port: ${httpPort}. Must be between 1-65535.`);
-      process.exit(1);
-    }
+  const listen = getListenPort();
 
-    const host = resolveBindHost(process.env.MCP_HTTP_HOST);
-    console.log(`Starting HTTP transport on ${host}:${port}`);
-    const app = await createHttpServer(createMcpServer, port);
-    
-    const httpServer = app.listen(port, host, () => {
-      console.log(`HTTP server listening on ${host}:${port}`);
-      // Health/MCP URLs shown as localhost for developer convenience
-      console.log(`Health check: http://localhost:${port}/health`);
-      console.log(`MCP endpoint: http://localhost:${port}/mcp`);
-    });
-
-    // Handle graceful shutdown
-    const shutdown = (signal: string) => {
-      console.log(`Received ${signal}. Shutting down HTTP server...`);
-      httpServer.close(() => {
-        console.log("HTTP server closed");
-        process.exit(0);
-      });
-    };
-
-    process.on('SIGINT', () => shutdown('SIGINT'));
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
-  } else {
-    // Default STDIO transport — single session, single server
+  if (listen === "stdio") {
     const mcpServer = createMcpServer();
-
-    // Show helpful message when running in terminal
     if (process.stdin.isTTY) {
       console.error(`🔍 MCP SearXNG Server v${packageVersion} - Ready`);
       const searxngInstances = getSearxngInstances();
-      if (searxngInstances.length > 0) {
-        console.error(`🌐 SearXNG URLs: ${searxngInstances.join("; ")}`);
-      } else {
-        console.error("⚠️  SEARXNG_URL not set — configure it before using search tools");
-      }
+      console.error(`🌐 SearXNG URLs: ${searxngInstances.join("; ")}`);
       console.error("📡 Waiting for MCP client connection via STDIO...\n");
     }
-    
+    const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
     const transport = new StdioServerTransport();
     await mcpServer.connect(transport);
-    
-    // Log after connection is established
     logMessage(mcpServer, "info", `MCP SearXNG Server v${packageVersion} connected via STDIO`);
     logMessage(mcpServer, "info", `Log level: ${getCurrentLogLevel()}`);
     logMessage(mcpServer, "info", `Environment: ${process.env.NODE_ENV || 'development'}`);
     const searxngInstances = getSearxngInstances();
     logMessage(mcpServer, "info", `SearXNG URLs: ${searxngInstances.length > 0 ? searxngInstances.join("; ") : 'not configured'}`);
+    return;
   }
+
+  const host = resolveBindHost(process.env.MCP_HTTP_HOST);
+
+  const app = await createHttpServer(createMcpServer, listen);
+  
+  const httpServer = app.listen(listen, host, () => {
+    console.log(`🔍 MCP SearXNG Server v${packageVersion} - Ready`);
+    const searxngInstances = getSearxngInstances();
+    console.log(`🌐 SearXNG URLs: ${searxngInstances.join("; ")}`);
+    console.log(`📡 HTTP server listening on ${host}:${listen}`);
+    console.log(`   Health check: http://localhost:${listen}/health`);
+    console.log(`   MCP endpoint: http://localhost:${listen}/mcp`);
+  });
+
+  const shutdown = (signal: string) => {
+    console.log(`Received ${signal}. Shutting down HTTP server...`);
+    httpServer.close(() => {
+      console.log("HTTP server closed");
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 }

@@ -179,12 +179,12 @@ async function runTests() {
     const env = new EnvManager();
     env.delete('SEARXNG_URL');
 
-    // validateEnvironment() should return an error string (URL missing)
+    // validateEnvironment() should return null (default URLs used)
     const { validateEnvironment } = await import('../../src/error-handler.js');
     const result = validateEnvironment();
-    assert.ok(typeof result === 'string', 'validateEnvironment returns error string when URL missing');
+    assert.equal(result, null, 'validateEnvironment returns null when default URLs are used');
 
-    // But the server module itself must be importable and export packageVersion
+    // The server module itself must be importable and export packageVersion
     // (i.e. startup does not call process.exit when module is imported)
     assert.ok(typeof packageVersion === 'string');
 
@@ -245,7 +245,7 @@ async function runTests() {
       ['--import', 'tsx', 'src/cli.ts'],
       {
         cwd: process.cwd(),
-        env: { ...process.env, MCP_HTTP_PORT: '', SEARXNG_URL: 'https://test-searx.example.com' },
+        env: { ...process.env, MCP_HTTP_PORT: 'stdio', SEARXNG_URL: 'https://test-searx.example.com' },
         input: initMsg,
         encoding: 'utf8',
         timeout: 10000,

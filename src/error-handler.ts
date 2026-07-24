@@ -176,14 +176,10 @@ export function validateEnvironment(): string | null {
   const issues: string[] = [];
   
   const searxngUrls = parseSearxngUrls();
-  if (searxngUrls.length === 0) {
-    issues.push("SEARXNG_URL not set");
-  } else {
-    for (const searxngUrl of searxngUrls) {
-      const validationError = validateSearxngInstanceUrl(searxngUrl);
-      if (validationError) {
-        issues.push(validationError);
-      }
+  for (const searxngUrl of searxngUrls) {
+    const validationError = validateSearxngInstanceUrl(searxngUrl);
+    if (validationError) {
+      issues.push(validationError);
     }
   }
 
@@ -200,5 +196,5 @@ export function validateEnvironment(): string | null {
     return null;
   }
 
-  return `⚠️ Configuration Issues: ${issues.join(', ')}. Set SEARXNG_URL (e.g., http://localhost:8080 or https://search.example.com)`;
+  return `⚠️ Configuration Issues: ${issues.join(', ')}`;
 }

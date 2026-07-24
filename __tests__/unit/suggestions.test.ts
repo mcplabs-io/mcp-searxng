@@ -34,19 +34,14 @@ async function runTests() {
     envManager.restore();
   }, results);
 
-  await testFunction('returns empty array when SEARXNG_URL is unset', async () => {
+  await testFunction('uses default URLs when SEARXNG_URL is unset', async () => {
     envManager.delete('SEARXNG_URL');
     const mockServer = createMockServer();
-    let fetchCalled = false;
 
-    fetchMocker.mock(async () => {
-      fetchCalled = true;
-      return createMockFetch({ json: ['type', ['typescript']] })('https://unused.example.com');
-    });
+    fetchMocker.mock(createMockFetch({ json: ['type', ['typescript']] }));
 
     const suggestions = await performSearchSuggestions(mockServer as any, 'type');
-    assert.deepEqual(suggestions, []);
-    assert.equal(fetchCalled, false);
+    assert.deepEqual(suggestions, ['typescript']);
 
     fetchMocker.restore();
     envManager.restore();

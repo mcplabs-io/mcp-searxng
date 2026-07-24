@@ -166,21 +166,11 @@ async function runTests() {
     envManager.restore();
   }, results);
 
-  await testFunction('createConfigResource - transport includes http when MCP_HTTP_PORT set', () => {
-    envManager.set('MCP_HTTP_PORT', '3000');
-
-    const config = JSON.parse(createConfigResource());
-    assert.ok(config.capabilities.transports.includes('http'), 'Expected "http" in transports');
-    assert.ok(config.capabilities.transports.includes('stdio'), 'Expected "stdio" in transports');
-
-    envManager.restore();
-  }, results);
-
-  await testFunction('createConfigResource - transport is stdio only when MCP_HTTP_PORT not set', () => {
+  await testFunction('createConfigResource - transport is http by default', () => {
     envManager.delete('MCP_HTTP_PORT');
 
     const config = JSON.parse(createConfigResource());
-    assert.deepEqual(config.capabilities.transports, ['stdio']);
+    assert.deepEqual(config.capabilities.transports, ['http']);
 
     envManager.restore();
   }, results);

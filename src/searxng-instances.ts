@@ -1,6 +1,9 @@
 const FAILURE_COOLDOWN_THRESHOLD = 3;
 const FAILURE_COOLDOWN_MS = 60_000;
 
+const DEFAULT_SEARXNG_URLS =
+  "https://paulgo.io;https://searxng.cups.moe;https://searxng.gr;https://etsi.me;https://search.drayko.xyz;https://searx.perennialte.ch;https://searx.sev.monster";
+
 type InstanceHealth = {
   consecutiveFailures: number;
   cooledUntil: number;
@@ -22,12 +25,13 @@ function getActiveHealth(instanceUrl: string, now: number): InstanceHealth | und
   return state;
 }
 
-export function parseSearxngUrls(raw: string | undefined = process.env.SEARXNG_URL): string[] {
-  if (raw === undefined) {
+export function parseSearxngUrls(raw?: string): string[] {
+  const urls = raw ?? process.env.SEARXNG_URL ?? DEFAULT_SEARXNG_URLS;
+  if (!urls) {
     return [];
   }
 
-  return raw
+  return urls
     .split(";")
     .map((entry) => entry.trim())
     .filter((entry) => entry !== "");

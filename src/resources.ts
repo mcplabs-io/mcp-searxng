@@ -8,17 +8,11 @@ import { parseSearxngUrls, redactSearxngInstanceUrl } from "./searxng-instances.
 // userinfo from each entry before exposing it in the config resource so the host
 // stays visible for debugging but embedded secrets are never returned to clients.
 function redactedConfiguredSearxngUrl(): string {
-  const raw = "https://metacat.online;https://nyc1.sx.ggtyler.dev;https://ooglester.com;https://search.080609.xyz;https://search.canine.tools;https://search.catboy.house;https://search.citw.lgbt;https://search.einfachzocken.eu;https://search.federicociro.com;https://search.hbubli.cc;https://search.im-in.space;https://search.indst.eu";
-  if (!raw) {
+  const parsed = parseSearxngUrls();
+  if (parsed.length === 0) {
     return "(not configured)";
   }
-  const redacted = raw
-    .split(";")
-    .map((entry) => entry.trim())
-    .filter((entry) => entry !== "")
-    .map(redactSearxngInstanceUrl)
-    .join("; ");
-  return redacted || raw;
+  return parsed.map(redactSearxngInstanceUrl).join("; ");
 }
 
 // Auth is configured when the global AUTH_* fallback is set or any instance URL
@@ -65,7 +59,7 @@ export function createConfigResource() {
       ],
       logging: true,
       resources: true,
-      transports: process.env.MCP_HTTP_PORT ? ["stdio", "http"] : ["stdio"]
+      transports: ["http"]
     }
   };
 
@@ -126,8 +120,9 @@ Reads and converts web page content to Markdown format.
 
 ## Configuration
 
-### Required Environment Variables
-- \`SEARXNG_URL\`: URL of your SearXNG instance (e.g., http://localhost:8080). For Basic Auth, embed credentials in the URL (e.g., https://user:password@search.example.com); percent-encode special characters in the username or password (e.g. \`@\` as \`%40\`). Multi-instance lists can use different credentials per semicolon-separated URL.
+### Environment Variables
+
+- \`SEARXNG_URL\`: Override the default public SearXNG instances with your own URL or semicolon-separated list. For Basic Auth, embed credentials in the URL (e.g., https://user:password@search.example.com); percent-encode special characters in the username or password (e.g. \`@\` as \`%40\`). Multi-instance lists can use different credentials per semicolon-separated URL. If not set, a set of public instances is used automatically.
 
 ### Optional Environment Variables
 Common ones are listed below. This is not exhaustive — see CONFIGURATION.md in the project repository for the full reference (failover/fan-out, caching, timeouts, result limits, per-tool proxies, TLS, HTTP transport, and hardening).
@@ -140,20 +135,19 @@ Common ones are listed below. This is not exhaustive — see CONFIGURATION.md in
 ### URL Reader Security
 \`web_url_read\` blocks private/internal URLs and redirects to private/internal URLs by default. Set \`MCP_HTTP_ALLOW_PRIVATE_URLS=true\` only when internal URL reads are intentional.
 
-## Transport Modes
+## Transport
 
-### STDIO (Default)
-Standard input/output transport for desktop clients like Claude Desktop.
+### HTTP (Default)
+RESTful HTTP transport on port 3000 by default. Override with \`MCP_HTTP_PORT\`.
 
-### HTTP (Optional)
-RESTful HTTP transport for web applications. Set \`MCP_HTTP_PORT\` to enable.
-
-### Hardened HTTP Mode (Optional)
-Default behavior remains compatible for existing deployments.
+### Hardened HTTP Mode
 For network-exposed HTTP transport, enable:
 - \`MCP_HTTP_HARDEN\`
 - \`MCP_HTTP_AUTH_TOKEN\`
 - \`MCP_HTTP_ALLOWED_ORIGINS\`
+
+### STDIO
+Set \`MCP_HTTP_PORT=0\` or unset it and use a client that connects via standard input/output directly.
 
 ## Usage Examples
 
@@ -183,7 +177,7 @@ Args: {"includeEngines": true}
 
 ## Troubleshooting
 
-1. **"SEARXNG_URL not set"**: Configure the SEARXNG_URL environment variable
+1. **No search results**: Try different search terms or check if the public SearXNG instances are reachable from your network
 2. **Network errors**: Check if SearXNG is running and accessible
 3. **Empty results**: Try different search terms or check SearXNG instance
 4. **Timeout errors**: Search and URL fetches time out after 10 seconds by default; tune with \`SEARXNG_TIMEOUT_MS\` and \`FETCH_TIMEOUT_MS\`

@@ -31,6 +31,14 @@ const envManager = new EnvManager();
 async function runTests() {
   console.log('🧪 Testing: searxng-instances.ts\n');
 
+  await testFunction('parseSearxngUrls uses defaults when no env var set', () => {
+    envManager.delete('SEARXNG_URL');
+    const urls = getSearxngInstances();
+    assert.ok(urls.length > 0, 'expected default URLs to be returned');
+    assert.ok(urls[0].startsWith('https://'), 'expected https URL');
+    envManager.restore();
+  }, results);
+
   await testFunction('parseSearxngUrls preserves a single URL unchanged', () => {
     assert.deepEqual(parseSearxngUrls('https://search.example.com'), ['https://search.example.com']);
   }, results);
