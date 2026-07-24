@@ -59,16 +59,16 @@ async function captureConsoleOutput(action: () => Promise<void>): Promise<string
 async function runTests() {
   console.log('🧪 Integration Testing: http-server.ts\n');
 
-  await testFunction('default trust proxy setting remains disabled', async () => {
+  await testFunction('default trust proxy is enabled (no env var set)', async () => {
     envManager.delete('MCP_HTTP_TRUST_PROXY');
 
     const app = await createHttpServer(() => createTestMcpServer());
-    assert.equal(app.get('trust proxy'), false);
+    assert.equal(app.get('trust proxy'), true);
 
     envManager.restore();
   }, results);
 
-  await testFunction('GET /health accepts X-Forwarded-For when trust proxy is unset', async () => {
+  await testFunction('GET /health accepts X-Forwarded-For when trust proxy is default', async () => {
     envManager.delete('MCP_HTTP_TRUST_PROXY');
 
     const app = await createHttpServer(() => createTestMcpServer());

@@ -27,7 +27,7 @@ async function runTests() {
     assert.equal(config.harden, false);
     assert.equal(config.requireAuth, false);
     assert.equal(config.restrictOrigins, false);
-    assert.equal(config.trustProxy, false);
+    assert.equal(config.trustProxy, true);
 
     envManager.restore();
   }, results);
