@@ -59,11 +59,11 @@ async function captureConsoleOutput(action: () => Promise<void>): Promise<string
 async function runTests() {
   console.log('🧪 Integration Testing: http-server.ts\n');
 
-  await testFunction('default trust proxy is enabled (no env var set)', async () => {
+  await testFunction('default trust proxy is 1 (one hop)', async () => {
     envManager.delete('MCP_HTTP_TRUST_PROXY');
 
     const app = await createHttpServer(() => createTestMcpServer());
-    assert.equal(app.get('trust proxy'), true);
+    assert.equal(app.get('trust proxy'), 1);
 
     envManager.restore();
   }, results);

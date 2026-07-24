@@ -26,11 +26,11 @@ function parseCsv(value: string | undefined): string[] {
 
 function parseTrustProxy(value: string | undefined): boolean | number | string {
   const trimmed = value?.trim();
-  // Default to true (trust all proxies) for cloud platforms like Render,
-  // Heroku, Fly.io, etc. that sit behind a reverse proxy and set X-Forwarded-For.
+  // Default to 1 (trust one proxy hop) for cloud platforms like Render,
+  // Heroku, Fly.io, etc. that sit behind a single reverse proxy.
   // Set MCP_HTTP_TRUST_PROXY=false for local-only deployments.
   if (value === undefined || trimmed === undefined) {
-    return true;
+    return 1;
   }
   // Treat "0" as disabled (false): operators use 0 to turn numeric knobs off,
   // and Express would otherwise mis-parse the string "0" as a bogus trust subnet.
