@@ -8,7 +8,7 @@ import { parseSearxngUrls, redactSearxngInstanceUrl } from "./searxng-instances.
 // userinfo from each entry before exposing it in the config resource so the host
 // stays visible for debugging but embedded secrets are never returned to clients.
 function redactedConfiguredSearxngUrl(): string {
-  const raw = process.env.SEARXNG_URL;
+  const raw = "https://metacat.online;https://nyc1.sx.ggtyler.dev;https://ooglester.com;https://search.080609.xyz;https://search.canine.tools;https://search.catboy.house;https://search.citw.lgbt;https://search.einfachzocken.eu;https://search.federicociro.com;https://search.hbubli.cc;https://search.im-in.space;https://search.indst.eu";
   if (!raw) {
     return "(not configured)";
   }
