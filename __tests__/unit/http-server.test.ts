@@ -33,9 +33,9 @@ export async function runTests(): Promise<TestResult> {
 
   // --- resolveBindHost() ---
 
-  await testFunction('No MCP_HTTP_HOST env var → defaults to 127.0.0.1', () => {
+  await testFunction('No MCP_HTTP_HOST env var → defaults to 0.0.0.0', () => {
     envManager.delete('MCP_HTTP_HOST');
-    assert.equal(resolveBindHost(undefined), '127.0.0.1');
+    assert.equal(resolveBindHost(undefined), '0.0.0.0');
     envManager.restore();
   }, results);
 
@@ -63,15 +63,15 @@ export async function runTests(): Promise<TestResult> {
     envManager.restore();
   }, results);
 
-  await testFunction('MCP_HTTP_HOST="" (empty string) → defaults to 127.0.0.1', () => {
+  await testFunction('MCP_HTTP_HOST="" (empty string) → defaults to 0.0.0.0', () => {
     envManager.set('MCP_HTTP_HOST', '');
-    assert.equal(resolveBindHost(process.env.MCP_HTTP_HOST), '127.0.0.1');
+    assert.equal(resolveBindHost(process.env.MCP_HTTP_HOST), '0.0.0.0');
     envManager.restore();
   }, results);
 
-  await testFunction('MCP_HTTP_HOST="   " (whitespace only) → defaults to 127.0.0.1', () => {
+  await testFunction('MCP_HTTP_HOST="   " (whitespace only) → defaults to 0.0.0.0', () => {
     envManager.set('MCP_HTTP_HOST', '   ');
-    assert.equal(resolveBindHost(process.env.MCP_HTTP_HOST), '127.0.0.1');
+    assert.equal(resolveBindHost(process.env.MCP_HTTP_HOST), '0.0.0.0');
     envManager.restore();
   }, results);
 

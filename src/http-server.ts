@@ -21,13 +21,13 @@ interface Session {
 
 /**
  * Resolves the bind host from the MCP_HTTP_HOST environment variable.
- * Falls back to "127.0.0.1" (localhost only) when the variable is absent or whitespace-only.
- * Set MCP_HTTP_HOST=0.0.0.0 to expose on all interfaces (e.g. Docker, remote access).
+ * Falls back to "0.0.0.0" (all interfaces) when the variable is absent or whitespace-only.
+ * Set MCP_HTTP_HOST=127.0.0.1 to restrict to loopback only (local development).
  */
 export function resolveBindHost(envValue: string | undefined): string {
   const trimmed = envValue?.trim();
   if (!trimmed) {
-    return "127.0.0.1";
+    return "0.0.0.0";
   }
   return trimmed;
 }
