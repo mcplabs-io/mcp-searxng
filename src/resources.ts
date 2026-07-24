@@ -49,7 +49,7 @@ export function createConfigResource() {
     environment: {
       ...(showFullConfig
         ? { searxngUrl: redactedConfiguredSearxngUrl() }
-        : { searxngUrlConfigured: !!process.env.SEARXNG_URL }),
+        : { searxngUrlConfigured: true }),
       hasAuth: hasConfiguredAuth(),
       hasProxy: !!(process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.https_proxy),
       hasNoProxy: !!(process.env.NO_PROXY || process.env.no_proxy),
